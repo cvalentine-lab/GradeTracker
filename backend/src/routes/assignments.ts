@@ -65,7 +65,7 @@ assignmentsRouter.patch(
   '/:id',
   body('name').optional().trim().notEmpty(),
   body('weightPercent').optional().isFloat({ min: 0, max: 100 }),
-  body('gradeReceived').optional().isFloat({ min: 0, max: 100 }).nullable(),
+  body('gradeReceived').optional().custom((val) => val === null || val === undefined || (typeof val === 'number' && val >= 0 && val <= 100) || (!isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100)),
   body('dueDate').optional().isISO8601(),
   async (req, res) => {
     const userId = (req as { userId: string }).userId;
