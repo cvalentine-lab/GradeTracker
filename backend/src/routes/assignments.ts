@@ -14,7 +14,7 @@ async function checkClassAccess(userId: string, classId: string) {
 }
 
 assignmentsRouter.get('/class/:classId', async (req, res) => {
-  const userId = (req as { userId: string }).userId;
+  const userId = (req as unknown as { userId: string }).userId;
   const { classId } = req.params;
   const c = await checkClassAccess(userId, classId);
   if (!c) {
@@ -41,7 +41,7 @@ assignmentsRouter.post(
       res.status(400).json({ errors: errors.array() });
       return;
     }
-    const userId = (req as { userId: string }).userId;
+    const userId = (req as unknown as { userId: string }).userId;
     const { classId, name, weightPercent, gradeReceived, dueDate } = req.body;
     const c = await checkClassAccess(userId, classId);
     if (!c) {
@@ -68,8 +68,8 @@ assignmentsRouter.patch(
   body('gradeReceived').optional().custom((val) => val === null || val === undefined || (typeof val === 'number' && val >= 0 && val <= 100) || (!isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100)),
   body('dueDate').optional().isISO8601(),
   async (req, res) => {
-    const userId = (req as { userId: string }).userId;
-    const { id } = req.params;
+    const userId = (req as unknown as { userId: string }).userId;
+    const id = req.params!.id;
     const a = await prisma.assignment.findUnique({
       where: { id },
       include: { class: true },
@@ -93,8 +93,8 @@ assignmentsRouter.patch(
 );
 
 assignmentsRouter.delete('/:id', async (req, res) => {
-  const userId = (req as { userId: string }).userId;
-  const { id } = req.params;
+  const userId = (req as unknown as { userId: string }).userId;
+  const id = req.params!.id;
   const a = await prisma.assignment.findUnique({
     where: { id },
     include: { class: true },

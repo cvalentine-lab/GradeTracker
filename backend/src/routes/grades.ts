@@ -11,7 +11,7 @@ export const gradesRouter = Router();
 gradesRouter.use(authMiddleware);
 
 gradesRouter.get('/class/:classId/current', async (req, res) => {
-  const userId = (req as { userId: string }).userId;
+  const userId = (req as unknown as { userId: string }).userId;
   const { classId } = req.params;
   const c = await prisma.class.findFirst({ where: { id: classId, userId } });
   if (!c) {
@@ -29,7 +29,7 @@ gradesRouter.get('/class/:classId/current', async (req, res) => {
 });
 
 gradesRouter.get('/class/:classId/min-needed', async (req, res) => {
-  const userId = (req as { userId: string }).userId;
+  const userId = (req as unknown as { userId: string }).userId;
   const { classId } = req.params;
   const target = Number(req.query.target ?? 90);
   const c = await prisma.class.findFirst({ where: { id: classId, userId } });
@@ -48,7 +48,7 @@ gradesRouter.get('/class/:classId/min-needed', async (req, res) => {
 });
 
 gradesRouter.get('/class/:classId/priority', async (req, res) => {
-  const userId = (req as { userId: string }).userId;
+  const userId = (req as unknown as { userId: string }).userId;
   const { classId } = req.params;
   const c = await prisma.class.findFirst({ where: { id: classId, userId } });
   if (!c) {

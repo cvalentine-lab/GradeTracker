@@ -7,7 +7,7 @@ export const classesRouter = Router();
 classesRouter.use(authMiddleware);
 
 classesRouter.get('/', async (req, res) => {
-  const userId = (req as { userId: string }).userId;
+  const userId = (req as unknown as { userId: string }).userId;
   const classes = await prisma.class.findMany({
     where: { userId },
     include: { assignments: true },
@@ -25,7 +25,7 @@ classesRouter.post(
       res.status(400).json({ errors: errors.array() });
       return;
     }
-    const userId = (req as { userId: string }).userId;
+    const userId = (req as unknown as { userId: string }).userId;
     const { name } = req.body;
     const c = await prisma.class.create({
       data: { userId, name },
@@ -38,8 +38,8 @@ classesRouter.patch(
   '/:id',
   body('name').optional().trim().notEmpty(),
   async (req, res) => {
-    const userId = (req as { userId: string }).userId;
-    const { id } = req.params;
+    const userId = (req as unknown as { userId: string }).userId;
+    const id = req.params!.id;
     const c = await prisma.class.findFirst({ where: { id, userId } });
     if (!c) {
       res.status(404).json({ error: 'Class not found' });
@@ -55,8 +55,8 @@ classesRouter.patch(
 );
 
 classesRouter.delete('/:id', async (req, res) => {
-  const userId = (req as { userId: string }).userId;
-  const { id } = req.params;
+  const userId = (req as unknown as { userId: string }).userId;
+  const id = req.params!.id;
   const c = await prisma.class.findFirst({ where: { id, userId } });
   if (!c) {
     res.status(404).json({ error: 'Class not found' });
