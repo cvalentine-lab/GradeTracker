@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { planner } from '../api';
+import { planner, populi } from '../api';
 import { format, parseISO, isPast } from 'date-fns';
 import styles from './Planner.module.css';
 
@@ -7,6 +7,8 @@ export default function Planner() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [building, setBuilding] = useState(false);
+  const [aiBuilding, setAiBuilding] = useState(false);
+  const [populiConnected, setPopuliConnected] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
 
@@ -23,6 +25,7 @@ export default function Planner() {
 
   useEffect(() => {
     load();
+    populi.status().then((s) => setPopuliConnected(s?.mode === 'live')).catch(() => {});
   }, []);
 
   async function handleBuild() {
@@ -34,6 +37,19 @@ export default function Planner() {
       console.error(e);
     } finally {
       setBuilding(false);
+    }
+  }
+
+  async function handleAiBuild() {
+    setAiBuilding(true);
+    try {
+      const { planner: p } = await planner.aiBuild();
+      setItems(p || []);
+    } catch (e) {
+      console.error(e);
+      alert(e?.message || 'AI build failed. Add OPENAI_API_KEY to backend/.env');
+    } finally {
+      setAiBuilding(false);
     }
   }
 
@@ -79,17 +95,26 @@ export default function Planner() {
     <div className={styles.planner}>
       <h1>Planner</h1>
       <p className={styles.desc}>
-        Automatically build your planner from Populi assignments, or add custom items.
+        Build your planner from your syllabi—it pulls assignments and due dates from your Populi courses. Add custom items as needed.
       </p>
 
       <div className={styles.actions}>
         <button
           className={styles.buildBtn}
           onClick={handleBuild}
-          disabled={building}
+          disabled={building || aiBuilding}
         >
-          {building ? 'Building...' : 'Build planner from courses'}
+          {building ? 'Building...' : 'Build planner from syllabi'}
         </button>
+        {populiConnected && (
+          <button
+            className={styles.aiBuildBtn}
+            onClick={handleAiBuild}
+            disabled={building || aiBuilding}
+          >
+            {aiBuilding ? 'AI planning...' : 'AI build planner'}
+          </button>
+        )}
       </div>
 
       <form className={styles.addForm} onSubmit={handleAdd}>
@@ -132,6 +157,7 @@ export default function Planner() {
                       {item.course_name && `${item.course_name} · `}
                       {item.due_date ? format(parseISO(item.due_date), 'MMM d, yyyy') : 'No due date'}
                       {overdue && <span className={styles.overdue}> overdue</span>}
+                      {item.notes && ` · ${item.notes}`}
                     </span>
                   </div>
                   <button

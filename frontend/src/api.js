@@ -22,6 +22,7 @@ export const populi = {
 export const planner = {
   list: () => fetchJson('/planner'),
   build: (termId) => fetchJson(`/planner/build${termId ? `?term_id=${termId}` : ''}`),
+  aiBuild: () => fetchJson('/planner/ai-build', { method: 'POST' }),
   add: (body) => fetchJson('/planner', { method: 'POST', body: JSON.stringify(body) }),
   toggleComplete: (id) => fetchJson(`/planner/${id}/complete`, { method: 'PATCH' }),
   delete: (id) => fetchJson(`/planner/${id}`, { method: 'DELETE' }),

@@ -9,7 +9,7 @@ export function isConfigured() {
 
 async function populiRequest(path, params = {}) {
   if (!isConfigured()) {
-    return { error: 'Populi API not configured. Add POPULI_API_URL and POPULI_ACCESS_TOKEN to .env' };
+    return { error: 'Populi API not configured. Add POPULI_API_URL (e.g. https://yourschool.populiweb.com/api2) and POPULI_ACCESS_TOKEN to backend/.env' };
   }
   const url = new URL(`${API_URL}${path}`);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));

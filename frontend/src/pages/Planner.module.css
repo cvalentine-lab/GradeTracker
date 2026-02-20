@@ -10,7 +10,30 @@
 }
 
 .actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
   margin-bottom: 1rem;
+}
+
+.aiBuildBtn {
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.aiBuildBtn:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.aiBuildBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .buildBtn {

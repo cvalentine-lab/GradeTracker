@@ -19,19 +19,24 @@ export default function Settings() {
         </p>
         {status?.mode === 'demo' && (
           <div className={styles.config}>
-            <p>To connect to your school's Populi:</p>
+            <p>To link your Populi account and build a planner from your syllabi:</p>
             <ol>
-              <li>Copy <code>.env.example</code> to <code>.env</code> in the backend folder.</li>
-              <li>Add your Populi API URL (e.g. <code>https://yourschool.populiweb.com/api</code>)</li>
-              <li>Add your Populi access token (get from your school admin)</li>
-              <li>Restart the backend server</li>
+              <li>Request API access from your school's IT department or registrar. They can create an API key in Populi under Account & Settings → API → Keys.</li>
+              <li>Create <code>backend/.env</code> (copy from <code>backend/.env.example</code>).</li>
+              <li>Set <code>POPULI_API_URL</code> to your school's API URL, e.g. <code>https://myschool.populiweb.com/api2</code></li>
+              <li>Set <code>POPULI_ACCESS_TOKEN</code> to the API key from your admin.</li>
+              <li>Restart the backend server.</li>
             </ol>
             <p className={styles.note}>
-              Populi API access is typically granted by your institution's administrator.
-              Contact your school's IT department for API credentials.
+              You can try the app with sample data in demo mode—build a planner and browse syllabi to see how it works.
             </p>
           </div>
         )}
+      </section>
+
+      <section className={styles.section}>
+        <h2>AI Planner</h2>
+        <p>When Populi is connected, you can use the <strong>AI build planner</strong> button to generate a smart planner from your syllabi. Add <code>OPENAI_API_KEY</code> to <code>backend/.env</code> (get a key at platform.openai.com).</p>
       </section>
     </div>
   );

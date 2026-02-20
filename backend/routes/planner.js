@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb } from '../db.js';
 import * as populi from '../services/populi.js';
+import * as ai from '../services/ai.js';
 import { DEMO_COURSES, DEMO_ASSIGNMENTS } from '../services/demoData.js';
 
 const router = express.Router();
@@ -8,6 +9,78 @@ const router = express.Router();
 function useDemoData() {
   return !populi.isConfigured();
 }
+
+// AI-built planner (only when Populi connected + OpenAI configured)
+router.post('/ai-build', async (req, res) => {
+  if (!populi.isConfigured()) {
+    return res.status(400).json({ error: 'Connect Populi in Settings first' });
+  }
+  if (!ai.isConfigured()) {
+    return res.status(400).json({ error: 'Add OPENAI_API_KEY to backend/.env' });
+  }
+
+  try {
+    const termResult = await populi.getCurrentTerm();
+    const term = termResult?.term;
+    const termId = term?.id;
+
+    const { courses = [] } = await populi.getCourseOfferings(termId);
+    const syllabi = {};
+    const assignments = [];
+
+    for (const course of courses) {
+      const { syllabus } = await populi.getCourseSyllabus(course.id);
+      if (syllabus?.content || syllabus?.body) {
+        syllabi[course.id] = { title: syllabus.title, content: syllabus.content || syllabus.body };
+      }
+      const { assignments: courseAssignments } = await populi.getAssignments(course.id);
+      (courseAssignments || []).forEach((a) => {
+        assignments.push({
+          ...a,
+          course_name: course.name,
+          due_at: a.due_at || a.due_date,
+        });
+      });
+    }
+
+    const result = await ai.generatePlanner({
+      courses,
+      syllabi,
+      assignments,
+      term,
+    });
+
+    if (result.error) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    const db = getDb();
+    const deleteOld = db.prepare('DELETE FROM planner_items');
+    deleteOld.run();
+
+    const insertStmt = db.prepare(
+      'INSERT INTO planner_items (title, due_date, course_name, type, notes) VALUES (?, ?, ?, ?, ?)'
+    );
+
+    for (const item of result.items || []) {
+      const dueDate = item.due_date ? String(item.due_date).slice(0, 10) : null;
+      const type = item.type || 'other';
+      insertStmt.run(
+        item.title || 'Untitled',
+        dueDate,
+        item.course_name || null,
+        type,
+        item.notes || null
+      );
+    }
+
+    const items = db.prepare('SELECT * FROM planner_items ORDER BY due_date ASC, title ASC').all();
+    res.json({ planner: items });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Build planner from assignments (auto-generate)
 router.get('/build', async (req, res) => {

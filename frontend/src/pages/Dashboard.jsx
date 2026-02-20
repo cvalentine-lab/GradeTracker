@@ -67,7 +67,7 @@ export default function Dashboard() {
       <h1>Dashboard</h1>
       {status?.mode === 'demo' && (
         <div className={styles.demoBanner}>
-          Demo mode — using sample data. Configure Populi in Settings to connect to your school.
+          Demo mode — using sample data. <Link to="/settings">Connect Populi</Link> in Settings to link your account and build a planner from your syllabi.
         </div>
       )}
 
