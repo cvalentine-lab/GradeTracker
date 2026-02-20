@@ -1,34 +1,14 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, Outlet } from 'react-router-dom';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
+export default function Layout() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-semibold text-slate-800">
-            Grade Tracker
-          </Link>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-600">{user?.email}</span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-slate-600 hover:text-slate-900"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
+    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <nav style={{ background: 'white', borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }}>
+        <Link to="/" style={{ fontWeight: 600, color: '#1e293b' }}>Grade Tracker</Link>
       </nav>
-      <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+      <main style={{ maxWidth: 896, margin: '0 auto', padding: 32 }}>
+        <Outlet />
+      </main>
     </div>
   );
 }

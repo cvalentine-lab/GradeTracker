@@ -5,11 +5,12 @@
   "scripts": {
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:single": "npm run build && node backend/server.js",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "build": "cd backend && npm install && npm run db:generate && npm run build && cd ../frontend && npm install && npm run build",
-    "start": "cd backend && npm run build && NODE_ENV=production node dist/index.js",
-    "start:win": "cd backend && npm run build && set NODE_ENV=production && node dist/index.js"
+    "dev:single": "npm run install:all && npm run build && node backend/server.js",
+    "build": "cd backend && npm install && cd ../frontend && npm install && npm run build",
+    "start": "node backend/server.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

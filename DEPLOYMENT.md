@@ -1,79 +1,59 @@
-# Deployment Guide
+# Deployment Guide — Railway (Single Service)
 
-Deploy the Grade Tracker backend on **Render** and the frontend on **Vercel**. Uses SQLite for the database (no separate DB service needed).
+Deploy the full app (frontend + backend) as **one service** on [Railway](https://railway.app). The backend serves the frontend and API from a single Node process.
 
-## 1. Render (Backend)
+## 1. Deploy to Railway
 
-### Create Web Service
+1. Sign in at [railway.app](https://railway.app)
+2. **New Project** → **Deploy from GitHub repo**
+3. Select your repository
+4. Root directory: project root (leave default)
+5. Railway uses `railway.toml` for build/start — no extra config needed
 
-1. Sign in to [render.com](https://render.com)
-2. **New → Web Service**
-3. Connect your GitHub repo
-4. Root directory: `backend`
-5. Build command: `npm install && npx prisma generate && npm run build`
-6. Start command: `npm start` (or `npx node dist/index.js`)
-7. Add environment variables:
-   - `DATABASE_URL` — `file:./data/dev.db` (SQLite file in project dir)
-   - `JWT_SECRET` — Generate a long random string (e.g. `openssl rand -base64 32`)
-   - `NODE_ENV=production`
+### Environment variables
 
-Backend URL will be like: `https://grade-tracker-api.onrender.com`
+In Railway → your service → **Variables**, add:
 
-### SQLite on Render
+| Variable        | Value                                                         |
+|-----------------|---------------------------------------------------------------|
+| `NODE_ENV`      | `production`                                                  |
+| `JWT_SECRET`    | Long random string (e.g. `openssl rand -base64 32`)           |
+| `PORT`          | Railway sets this automatically                               |
 
-Render's free tier uses **ephemeral disk** — the SQLite file is lost when the service restarts or redeploys. For production with persistent data:
+Optional (for Populi / AI planner):
 
-- Use **Render persistent disk** (paid) and mount it, e.g. `file:/data/dev.db`
-- Or use **Railway**, **Fly.io**, or **Render paid** which support persistent storage
+- `POPULI_API_URL` — Your school's Populi API URL
+- `POPULI_ACCESS_TOKEN` — Populi API key
+- `OPENAI_API_KEY` — OpenAI API key for AI planner
 
-For development/demos, ephemeral SQLite is fine; data resets on deploy.
+### SQLite and persistence
 
----
+Railway’s default filesystem is **ephemeral** — data resets on redeploy.
 
-## 2. Vercel (Frontend)
+For persistent data:
 
-### Create project
+1. In Railway → your service → **Volumes**
+2. Add a volume and mount path: `/data`
+3. Add env var: `DB_PATH=/data/grade_tracker.db`
+4. Update `backend/db.js` to use `process.env.DB_PATH` when set
 
-1. Sign in to [vercel.com](https://vercel.com)
-2. **Import Project** → select your GitHub repo
-3. Root directory: `frontend`
-4. Framework preset: **Vite**
-5. Build command: `npm run build`
-6. Output directory: `dist`
-7. Add environment variable:
-   - `VITE_API_URL` — your Render backend URL (e.g. `https://grade-tracker-api.onrender.com`)
+## 2. Build and start commands
 
-The frontend is already configured to use `VITE_API_URL` in production.
+`railway.toml` configures:
 
----
+- **Build:** `npm run build` — installs deps and builds the frontend into `frontend/dist`
+- **Start:** `NODE_ENV=production npm start` — runs `node backend/server.js`
 
-## 3. CORS
+The backend serves:
 
-In `backend/src/app.ts`, CORS allows all origins by default. For production, you can restrict:
+- `/api/*` — API routes
+- `/*` — static frontend (in production)
 
-```ts
-app.use(cors({ 
-  origin: process.env.FRONTEND_URL ?? true,
-  credentials: true 
-}));
+## 3. Local development
+
+```bash
+npm run install:all
+npm run dev
 ```
 
-Add `FRONTEND_URL=https://your-app.vercel.app` to Render env vars if needed.
-
----
-
-## 4. Summary
-
-| Service | Platform | URL |
-|---------|----------|-----|
-| Database | SQLite (file, bundled with backend) | N/A |
-| Backend | Render Web Service | `https://your-api.onrender.com` |
-| Frontend | Vercel | `https://your-app.vercel.app` |
-
----
-
-## Render free tier notes
-
-- Web Service free tier sleeps after 15 min inactivity
-- First request after sleep may be slow
-- SQLite file is ephemeral — data resets on redeploy/restart
+This runs backend (port 3001) and frontend (port 5173) for local development.

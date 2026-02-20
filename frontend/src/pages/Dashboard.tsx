@@ -51,7 +51,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="text-slate-600">Loading...</div>;
+    return <div style={{ color: '#475569' }}>Loading...</div>;
   }
 
   return (

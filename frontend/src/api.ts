@@ -11,12 +11,20 @@ function getHeaders(): HeadersInit {
 }
 
 async function fetchJson<T>(url: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API}${url}`, {
-    headers: getHeaders(),
-    ...opts,
-  });
-  const data = (await res.json().catch(() => ({}))) as { error?: string };
-  if (!res.ok) throw new Error(data.error ?? res.statusText);
+  let res: Response;
+  try {
+    res = await fetch(`${API}${url}`, {
+      headers: getHeaders(),
+      ...opts,
+    });
+  } catch (err) {
+    throw new Error('Cannot reach server. Is the backend running?');
+  }
+  const data = (await res.json().catch(() => ({}))) as { error?: string; errors?: Array<{ msg?: string }> };
+  if (!res.ok) {
+    const msg = data.error ?? data.errors?.[0]?.msg ?? res.statusText;
+    throw new Error(msg || 'Request failed');
+  }
   return data as T;
 }
 
