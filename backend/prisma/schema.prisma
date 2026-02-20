@@ -1,0 +1,61 @@
+// Grade Tracker - SQLite Database Schema
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// User & Authentication
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  classes Class[]
+}
+
+// ---------------------------------------------------------------------------
+// Classes (Courses)
+// ---------------------------------------------------------------------------
+
+model Class {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignments Assignment[]
+
+  @@map("classes")
+}
+
+// ---------------------------------------------------------------------------
+// Assignments
+// ---------------------------------------------------------------------------
+
+model Assignment {
+  id            String    @id @default(cuid())
+  classId       String    @map("class_id")
+  name          String
+  weightPercent Float     @map("weight_percent") // e.g. 25 for 25%
+  gradeReceived Float?    @map("grade_received") // null if not graded yet (0-100)
+  dueDate       DateTime  @map("due_date")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@map("assignments")
+}
