@@ -31,44 +31,45 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-6">
-        <h1 className="text-xl font-semibold text-slate-800 mb-4">Sign in</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 400, background: 'white', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: 24 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Sign in</h1>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#334155', marginBottom: 4 }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14 }}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#334155', marginBottom: 4 }}>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14 }}
               required
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p style={{ fontSize: 14, color: '#dc2626' }}>{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            style={{
+              width: '100%', padding: '10px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6,
+              fontSize: 14, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
+            }}
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        <p className="mt-4 text-sm text-slate-600">
+        <p style={{ marginTop: 16, fontSize: 14, color: '#64748b' }}>
           Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register
-          </Link>
+          <Link to="/register" style={{ color: '#2563eb', textDecoration: 'underline' }}>Register</Link>
         </p>
       </div>
     </div>

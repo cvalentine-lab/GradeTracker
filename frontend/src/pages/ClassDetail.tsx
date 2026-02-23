@@ -5,8 +5,151 @@ import {
   assignments as assignmentsApi,
   grades as gradesApi,
   classes as classesApi,
+  syllabi as syllabiApi,
 } from '../api';
+import type { Syllabus } from '../api';
 import type { Assignment } from '../api';
+
+function SyllabusSection({
+  classId,
+  syllabus,
+  onUpdate,
+}: {
+  classId: string;
+  syllabus: Syllabus | null;
+  onUpdate: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [err, setErr] = useState('');
+  const [showForm, setShowForm] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setContent(String(reader.result));
+      if (!title) setTitle(file.name.replace(/\.(txt|md)$/i, ''));
+    };
+    reader.readAsText(file);
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !content.trim()) {
+      setErr('Title and content are required');
+      return;
+    }
+    setErr('');
+    setUploading(true);
+    try {
+      await syllabiApi.upload(classId, title.trim(), content.trim());
+      setTitle('');
+      setContent('');
+      setShowForm(false);
+      onUpdate();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!syllabus || !confirm('Delete this syllabus?')) return;
+    try {
+      await syllabiApi.delete(syllabus.id);
+      onUpdate();
+    } catch {}
+  };
+
+  return (
+    <section style={{ marginBottom: 32 }}>
+      <h2 style={{ fontSize: 18, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Syllabus</h2>
+      {syllabus ? (
+        <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{syllabus.title}</h3>
+            <button
+              onClick={handleDelete}
+              style={{ fontSize: 14, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              Remove
+            </button>
+          </div>
+          <pre
+            style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}
+          >
+            {syllabus.content}
+          </pre>
+        </div>
+      ) : showForm ? (
+        <form onSubmit={handleSubmit} style={{ background: '#f8fafc', padding: 16, borderRadius: 8 }}>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Math 101 Syllabus"
+              style={{ width: '100%', maxWidth: 400, padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6 }}
+            />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Content (paste or upload .txt)</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Paste syllabus text here..."
+              rows={12}
+              style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit' }}
+            />
+          </div>
+          {err && <p style={{ color: '#dc2626', fontSize: 14, marginBottom: 8 }}>{err}</p>}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              type="submit"
+              disabled={uploading}
+              style={{ padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, cursor: uploading ? 'not-allowed' : 'pointer' }}
+            >
+              {uploading ? 'Uploading...' : 'Save syllabus'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowForm(false); setTitle(''); setContent(''); setErr(''); }}
+              style={{ padding: '8px 16px', background: 'none', color: '#64748b', border: 'none', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div style={{ background: '#f8fafc', padding: 24, borderRadius: 8, border: '1px dashed #cbd5e1' }}>
+          <p style={{ margin: '0 0 12px', fontSize: 14, color: '#64748b' }}>Upload a syllabus for this class</p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <label style={{ padding: '8px 16px', background: '#2563eb', color: 'white', borderRadius: 6, cursor: 'pointer', fontSize: 14 }}>
+              Choose .txt file
+              <input
+                type="file"
+                accept=".txt,.md"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+            </label>
+            <button
+              onClick={() => setShowForm(true)}
+              style={{ padding: '8px 16px', background: 'white', color: '#334155', border: '1px solid #cbd5e1', borderRadius: 6, cursor: 'pointer', fontSize: 14 }}
+            >
+              Paste text instead
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function AddAssignmentForm({
   classId,
@@ -164,6 +307,7 @@ export default function ClassDetail() {
   const { classId } = useParams<{ classId: string }>();
   const [className, setClassName] = useState('');
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [syllabus, setSyllabus] = useState<Syllabus | null>(null);
   const [currentGrade, setCurrentGrade] = useState<number | null>(null);
   const [minNeeded, setMinNeeded] = useState<{ minNeeded: number | null; message: string } | null>(null);
   const [priority, setPriority] = useState<(Assignment & { priorityScore: number })[]>([]);
@@ -175,9 +319,10 @@ export default function ClassDetail() {
     if (!classId) return;
     try {
       setError(null);
-      const [classes, assigns, current, min, prio] = await Promise.all([
+      const [classes, assigns, syllabusRes, current, min, prio] = await Promise.all([
         classesApi.list(),
         assignmentsApi.listByClass(classId),
+        syllabiApi.get(classId),
         gradesApi.currentGrade(classId),
         gradesApi.minNeeded(classId, targetGrade),
         gradesApi.priority(classId),
@@ -185,6 +330,7 @@ export default function ClassDetail() {
       const c = classes.find((x) => x.id === classId);
       setClassName(c?.name ?? '');
       setAssignments(assigns);
+      setSyllabus(syllabusRes.syllabus);
       setCurrentGrade(current.currentGrade);
       setMinNeeded(min);
       setPriority(prio);
@@ -239,6 +385,8 @@ export default function ClassDetail() {
           />
         </div>
       </div>
+
+      <SyllabusSection classId={classId} syllabus={syllabus} onUpdate={load} />
 
       <section className="mb-8">
         <h2 className="text-lg font-medium text-slate-800 mb-4">Assignments</h2>

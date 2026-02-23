@@ -111,6 +111,31 @@ export const assignments = {
     }),
 };
 
+export interface Syllabus {
+  id: string;
+  classId: string;
+  title: string;
+  content: string;
+  createdAt: string;
+}
+
+export const syllabi = {
+  get: (classId: string) =>
+    fetchJson<{ syllabus: Syllabus | null }>(`/syllabi/class/${classId}`),
+  upload: (classId: string, title: string, content: string) =>
+    fetchJson<{ syllabus: Syllabus }>('/syllabi', {
+      method: 'POST',
+      body: JSON.stringify({ classId, title, content }),
+    }),
+  delete: (id: string) =>
+    fetch(`${API}/syllabi/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    }).then((r) => {
+      if (!r.ok) return r.json().then((d) => { throw new Error((d as { error?: string }).error); });
+    }),
+};
+
 export const grades = {
   currentGrade: (classId: string) =>
     fetchJson<{ currentGrade: number | null; classId: string }>(`/grades/class/${classId}/current`),
