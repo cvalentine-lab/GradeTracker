@@ -1,6 +1,6 @@
 # Start Here – Super Simple Guide
 
-You already have a **backend** (the server that talks to Populi and stores your planner) and a **frontend** (the website you see in the browser). This guide assumes you’ve never done this before.
+You already have a **backend** (the server that stores your data) and a **frontend** (the website you see in the browser). This guide assumes you’ve never done this before.
 
 ---
 
@@ -38,7 +38,7 @@ You’ll see a prompt like `C:\Users\...` or `~$`. That’s where you type comma
 
 ```
 grade_tracker/
-├── backend/          ← The server (talks to Populi, runs AI, stores planner data)
+├── backend/          ← The server (stores your classes, assignments, planner data)
 ├── frontend/         ← The website (what you see in the browser)
 ├── package.json      ← Instructions for running everything
 ├── START_HERE.md     ← This file
@@ -46,12 +46,12 @@ grade_tracker/
 ```
 
 **Backend** = Server that:
-- Fetches your syllabi and assignments from Populi
-- Runs the AI planner
+- Stores your classes, assignments, and grades
+- Runs the AI planner (optional, needs OpenAI key)
 - Saves planner items in a database
 
 **Frontend** = Web app that:
-- Shows the dashboard, planner, syllabi, etc.
+- Shows the dashboard, classes, assignments, grades
 - Sends requests to the backend
 
 Both need to be running at the same time.
@@ -92,18 +92,18 @@ npm run dev
 ```
 
 You should see something like:
-- Backend: `Syllabus Planner running on port 3001`
+- Backend: `Grade Tracker running on port 3001`
 - Frontend: `Local: http://localhost:5173`
 
 ### Step 4: Open the app in your browser
 
 1. Open Chrome (or any browser).
 2. Go to: **http://localhost:5173**
-3. You should see the Syllabus Planner.
+3. You should see the Grade Tracker landing page.
 
 ---
 
-## Part 5: Connecting to Populi (Your School’s System)
+## Part 5: Optional – AI Planner (Your School’s System)
 
 Right now the app uses **demo data** (fake courses and assignments). To use your real Populi data:
 
@@ -126,15 +126,11 @@ Right now the app uses **demo data** (fake courses and assignments). To use your
 Your `.env` file should look like this (replace with your real values):
 
 ```
-POPULI_API_URL=https://yourschool.populiweb.com/api2
-POPULI_ACCESS_TOKEN=your-long-api-key-from-school
-
 OPENAI_API_KEY=sk-your-openai-key-here
 
 PORT=3001
 ```
 
-- `POPULI_API_URL` and `POPULI_ACCESS_TOKEN` = from your school.
 - `OPENAI_API_KEY` = from [platform.openai.com](https://platform.openai.com) if you want the AI planner. Sign up, add a payment method, then create an API key.
 
 **Important:** Never put your `.env` file on GitHub or share it. It contains secrets.
@@ -144,7 +140,6 @@ PORT=3001
 1. In the terminal where the app is running, press `Ctrl+C` to stop it.
 2. Run `npm run dev` again.
 
-The app should now use your real Populi data.
 
 ---
 
@@ -173,9 +168,6 @@ The app should now use your real Populi data.
 ### “Add OPENAI_API_KEY to backend/.env”
 - You’re trying to use the AI planner but haven’t set an OpenAI key. Add it to `backend/.env` and restart.
 
-### “Connect Populi in Settings first”
-- The AI planner only works when Populi is connected. Set `POPULI_API_URL` and `POPULI_ACCESS_TOKEN` in `backend/.env`.
-
 ---
 
 ## Part 8: Where Things Live
@@ -184,7 +176,6 @@ The app should now use your real Populi data.
 |------------------|-----------------------------------------------------|
 | Server / backend | `backend/server.js`                                 |
 | Database file    | `backend/grade_tracker.db` (created when you run it)|
-| Populi logic     | `backend/services/populi.js`                        |
 | AI logic         | `backend/services/ai.js`                            |
 | Secrets (API keys)| `backend/.env` (you create this from .env.example) |
 | Web pages        | `frontend/src/pages/`                               |

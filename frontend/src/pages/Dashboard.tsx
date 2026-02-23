@@ -51,15 +51,15 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div style={{ color: '#475569' }}>Loading...</div>;
+    return <div className="text-slate-500 dark:text-slate-400">Loading...</div>;
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-800 mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-display font-semibold text-slate-800 dark:text-slate-100 mb-6">Dashboard</h1>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md text-sm">{error}</div>
       )}
 
       <form onSubmit={handleCreate} className="flex gap-2 mb-8">
@@ -68,7 +68,7 @@ export default function Dashboard() {
           value={newClass}
           onChange={(e) => setNewClass(e.target.value)}
           placeholder="New class name"
-          className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-slate-400 dark:placeholder-slate-500"
         />
         <button
           type="submit"
@@ -80,22 +80,22 @@ export default function Dashboard() {
       </form>
 
       {classes.length === 0 ? (
-        <p className="text-slate-600">No classes yet. Add your first class above.</p>
+        <p className="text-slate-600 dark:text-slate-400">No classes yet. Add your first class above.</p>
       ) : (
         <ul className="space-y-2">
           {classes.map((c) => (
             <li
               key={c.id}
-              className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200"
+              className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700"
             >
-              <Link to={`/class/${c.id}`} className="font-medium text-slate-800 hover:text-blue-600">
+              <Link to={`/dashboard/class/${c.id}`} className="font-medium text-slate-800 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400">
                 {c.name}
               </Link>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-500">{c.assignments.length} assignments</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{c.assignments.length} assignments</span>
                 <button
                   onClick={() => handleDelete(c.id, c.name)}
-                  className="text-sm text-red-600 hover:text-red-800"
+                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                 >
                   Delete
                 </button>

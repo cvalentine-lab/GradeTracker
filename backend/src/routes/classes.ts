@@ -38,6 +38,11 @@ classesRouter.patch(
   '/:id',
   body('name').optional().trim().notEmpty(),
   async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
     const userId = (req as unknown as { userId: string }).userId;
     const id = req.params!.id;
     const c = await prisma.class.findFirst({ where: { id, userId } });

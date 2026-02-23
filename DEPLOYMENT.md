@@ -20,10 +20,8 @@ In Railway → your service → **Variables**, add:
 | `JWT_SECRET`    | Long random string (e.g. `openssl rand -base64 32`)           |
 | `PORT`          | Railway sets this automatically                               |
 
-Optional (for Populi / AI planner):
+Optional (for AI planner):
 
-- `POPULI_API_URL` — Your school's Populi API URL
-- `POPULI_ACCESS_TOKEN` — Populi API key
 - `OPENAI_API_KEY` — OpenAI API key for AI planner
 
 ### SQLite and persistence

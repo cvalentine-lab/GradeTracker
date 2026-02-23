@@ -1,0 +1,3 @@
+# Force Dockerfile (avoids Nixpacks overlay limits)
+[build]
+builder = "DOCKERFILE"

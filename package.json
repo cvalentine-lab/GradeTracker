@@ -3,6 +3,7 @@
   "private": true,
   "engines": { "node": ">=18" },
   "scripts": {
+    "check-openai": "node backend/scripts/check-openai.js",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:single": "npm run build && node backend/server.js",

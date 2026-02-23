@@ -149,3 +149,39 @@ export const grades = {
   priority: (classId: string) =>
     fetchJson<(Assignment & { priorityScore: number })[]>(`/grades/class/${classId}/priority`),
 };
+
+export interface PlannerItem {
+  id: number;
+  title: string;
+  due_date: string | null;
+  course_name: string | null;
+  type: string;
+  notes: string | null;
+  completed: number;
+}
+
+export const planner = {
+  list: () => fetchJson<{ planner: PlannerItem[] }>('/planner'),
+  build: () => fetchJson<{ planner: PlannerItem[] }>('/planner/build'),
+  aiBuildFromSyllabi: () =>
+    fetchJson<{ planner: PlannerItem[] }>('/planner/ai-build-from-syllabi', { method: 'POST' }),
+  aiBuildFromPdf: (pdfs: { name: string; base64: string }[]) =>
+    fetchJson<{ planner: PlannerItem[] }>('/planner/ai-build-from-pdf', {
+      method: 'POST',
+      body: JSON.stringify({ pdfs }),
+    }),
+  add: (data: { title: string; due_date?: string | null }) =>
+    fetchJson<{ item: PlannerItem }>('/planner', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  toggleComplete: (id: number) =>
+    fetchJson<{ item: PlannerItem }>(`/planner/${id}/complete`, { method: 'PATCH' }),
+  delete: (id: number) =>
+    fetch(`${API}/planner/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    }).then((r) => {
+      if (!r.ok) return r.json().then((d) => { throw new Error((d as { error?: string }).error); });
+    }),
+};

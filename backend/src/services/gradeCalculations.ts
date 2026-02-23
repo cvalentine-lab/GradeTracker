@@ -21,8 +21,9 @@ export function calculateCurrentGrade(assignments: AssignmentWithDecimal[]): num
 
 /**
  * Minimum grade needed on upcoming assignments to reach target grade.
- * Formula: target = (currentWeighted * gradedWeight + minNeeded * upcomingWeight) / 100
- * => minNeeded = (target * 100 - currentWeighted * gradedWeight) / upcomingWeight
+ * Uses actual total weight (gradedWeight + upcomingWeight) — works even when weights don't sum to 100.
+ * Formula: target = (currentWeighted * gradedWeight + minNeeded * upcomingWeight) / totalWeight
+ * => minNeeded = (target * totalWeight - currentWeighted * gradedWeight) / upcomingWeight
  */
 export function minimumGradeNeeded(
   assignments: AssignmentWithDecimal[],
@@ -37,16 +38,22 @@ export function minimumGradeNeeded(
 
   const gradedWeight = graded.reduce((sum, a) => sum + a.weightPercent, 0);
   const upcomingWeight = upcoming.reduce((sum, a) => sum + a.weightPercent, 0);
+  const totalWeight = gradedWeight + upcomingWeight;
+
+  if (totalWeight <= 0) {
+    return { minNeeded: null, message: 'No valid assignment weights' };
+  }
 
   const currentWeighted = graded.length > 0
     ? (graded.reduce((sum, a) => sum + (a.weightPercent * (a.gradeReceived ?? 0)), 0) / gradedWeight)
     : 0;
 
-  const numerator = targetGrade * 100 - currentWeighted * gradedWeight;
+  const numerator = targetGrade * totalWeight - currentWeighted * gradedWeight;
   const minNeeded = numerator / upcomingWeight;
 
   if (minNeeded > 100) {
-    return { minNeeded: 100, message: `Target ${targetGrade}% is not achievable. Best possible is ~${(currentWeighted * gradedWeight + 100 * upcomingWeight) / 100}%` };
+    const bestPossible = (currentWeighted * gradedWeight + 100 * upcomingWeight) / totalWeight;
+    return { minNeeded: 100, message: `Target ${targetGrade}% is not achievable. Best possible is ~${bestPossible.toFixed(1)}%` };
   }
   if (minNeeded < 0) {
     return { minNeeded: 0, message: `Target ${targetGrade}% is already exceeded. You can score 0% on remaining work.` };

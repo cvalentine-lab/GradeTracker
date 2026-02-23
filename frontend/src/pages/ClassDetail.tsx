@@ -351,7 +351,7 @@ export default function ClassDetail() {
 
   return (
     <div>
-      <Link to="/" className="text-sm text-blue-600 hover:underline mb-4 inline-block">
+      <Link to="/dashboard" className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4 inline-block">
         ← Back to Dashboard
       </Link>
       <h1 className="text-2xl font-semibold text-slate-800 mb-6">{className}</h1>

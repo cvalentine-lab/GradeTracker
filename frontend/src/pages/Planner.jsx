@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { planner, populi } from '../api';
+import { planner } from '../api';
 import { format, parseISO, isPast } from 'date-fns';
 import styles from './Planner.module.css';
 
@@ -7,8 +7,9 @@ export default function Planner() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [building, setBuilding] = useState(false);
-  const [aiBuilding, setAiBuilding] = useState(false);
-  const [populiConnected, setPopuliConnected] = useState(false);
+  const [syllabiBuilding, setSyllabiBuilding] = useState(false);
+  const [pdfBuilding, setPdfBuilding] = useState(false);
+  const [pdfFiles, setPdfFiles] = useState([]);
   const [newTitle, setNewTitle] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
 
@@ -25,7 +26,6 @@ export default function Planner() {
 
   useEffect(() => {
     load();
-    populi.status().then((s) => setPopuliConnected(s?.mode === 'live')).catch(() => {});
   }, []);
 
   async function handleBuild() {
@@ -40,16 +40,47 @@ export default function Planner() {
     }
   }
 
-  async function handleAiBuild() {
-    setAiBuilding(true);
+  async function handleSyllabiBuild() {
+    setSyllabiBuilding(true);
     try {
-      const { planner: p } = await planner.aiBuild();
+      const { planner: p } = await planner.aiBuildFromSyllabi();
       setItems(p || []);
     } catch (e) {
       console.error(e);
-      alert(e?.message || 'AI build failed. Add OPENAI_API_KEY to backend/.env');
+      alert(e?.message || 'AI build from syllabi failed');
     } finally {
-      setAiBuilding(false);
+      setSyllabiBuilding(false);
+    }
+  }
+
+  async function handlePdfBuild() {
+    if (!pdfFiles.length) {
+      alert('Select PDF files first');
+      return;
+    }
+    setPdfBuilding(true);
+    try {
+      const pdfs = await Promise.all(
+        pdfFiles.map((file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64 = reader.result.split(',')[1];
+              resolve({ name: file.name.replace(/\.pdf$/i, ''), base64 });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          })
+        )
+      );
+      const { planner: p } = await planner.aiBuildFromPdf(pdfs);
+      setItems(p || []);
+      setPdfFiles([]);
+    } catch (e) {
+      console.error(e);
+      alert(e?.message || 'PDF build failed');
+    } finally {
+      setPdfBuilding(false);
     }
   }
 
@@ -95,26 +126,44 @@ export default function Planner() {
     <div className={styles.planner}>
       <h1>Planner</h1>
       <p className={styles.desc}>
-        Build your planner from your syllabi—it pulls assignments and due dates from your Populi courses. Add custom items as needed.
+        Upload PDF syllabi and AI will extract assignments and due dates. Or build from your saved syllabi or assignments.
       </p>
+
+      <div className={styles.pdfUpload}>
+        <label className={styles.fileLabel}>
+          <input
+            type="file"
+            accept=".pdf,application/pdf"
+            multiple
+            onChange={(e) => setPdfFiles(Array.from(e.target.files || []))}
+            className={styles.fileInput}
+          />
+          {pdfFiles.length ? `${pdfFiles.length} PDF(s) selected` : 'Choose PDF syllabi'}
+        </label>
+        <button
+          className={styles.aiBuildBtn}
+          onClick={handlePdfBuild}
+          disabled={!pdfFiles.length || building || aiBuilding || syllabiBuilding || pdfBuilding}
+        >
+          {pdfBuilding ? 'Reading PDFs...' : 'Build from PDF syllabi'}
+        </button>
+      </div>
 
       <div className={styles.actions}>
         <button
           className={styles.buildBtn}
           onClick={handleBuild}
-          disabled={building || aiBuilding}
+          disabled={building || aiBuilding || syllabiBuilding || pdfBuilding}
         >
-          {building ? 'Building...' : 'Build planner from syllabi'}
+          {building ? 'Building...' : 'Build from my assignments'}
         </button>
-        {populiConnected && (
-          <button
-            className={styles.aiBuildBtn}
-            onClick={handleAiBuild}
-            disabled={building || aiBuilding}
-          >
-            {aiBuilding ? 'AI planning...' : 'AI build planner'}
-          </button>
-        )}
+        <button
+          className={styles.aiBuildBtn}
+          onClick={handleSyllabiBuild}
+          disabled={building || aiBuilding || syllabiBuilding || pdfBuilding}
+        >
+          {syllabiBuilding ? 'AI planning...' : 'AI build from syllabi'}
+        </button>
       </div>
 
       <form className={styles.addForm} onSubmit={handleAdd}>

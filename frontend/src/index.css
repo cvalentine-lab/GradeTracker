@@ -2,7 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: 248 250 252;
+  --fg: 15 23 42;
+  --muted: 100 116 139;
+  --accent: 37 99 235;
+  --card: 255 255 255;
+  --border: 226 232 240;
+}
+
+.dark {
+  --bg: 15 23 42;
+  --fg: 248 250 252;
+  --muted: 148 163 184;
+  --accent: 96 165 250;
+  --card: 30 41 59;
+  --border: 51 65 85;
+}
+
 html, body, #root {
   min-height: 100%;
   margin: 0;
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--fg));
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
